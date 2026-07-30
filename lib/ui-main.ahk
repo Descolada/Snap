@@ -136,7 +136,8 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.Show("w" g_MainGui.Width " h" g_MainGui.Height)
     P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it
 
-    Print.DefineProp("call", {call:(this, msg) => ((ctrl := ((g_MainGui.Tabs.Value = 1) ? g_MainGui.Tabs.Package.Metadata : g_MainGui.Tabs.Index.Metadata), ctrl.Value .= msg "`n", PostMessage(0x115, 7, 0,, ctrl.hWnd)))})
+    Print.DefineProp("call", {call:(this, msg, *) => ((ctrl := ((g_MainGui.Tabs.Value = 1) ? g_MainGui.Tabs.Package.Metadata : g_MainGui.Tabs.Index.Metadata), ctrl.Value .= msg "`n", PostMessage(0x115, 7, 0,, ctrl.hWnd)))})
+
     if Print.Buffer
         Print(Trim(Print.Buffer)), Print.Buffer := ""
 
@@ -153,10 +154,10 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     */
 
     if IsSet(OutFileName) && OutFileName {
-        Print "Installing dependencies from `"" OutFileName "`"`n"
+        Print("Installing dependencies from `"" OutFileName "`"`n")
         PackageAction(P, "install-external", FileOrDir, 0)
         if FileExist("package.json") {
-            Print "`n----------------------------------------------------`nInstalling packages from package.json`n"
+            Print("`n----------------------------------------------------`nInstalling packages from package.json`n")
             PackageAction(P, "install-external", "package.json", 0)
         }
     }
@@ -169,14 +170,14 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 }
 
 CheckArisUpdate() {
-    Print "Checking for Aris updates..."
+    Print("Checking for Aris updates...")
     if !(releases := QueryGitHubReleases("Descolada/ARIS/main")) || !(releases is Array) || !releases.Length {
-        Print "Couldn't find any Aris releases"
+        Print("Couldn't find any Aris releases")
         return
     }
     PackageJson := LoadPackageJson(A_ScriptDir)
     if VerCompare(releases[1]["tag_name"], PackageJson["version"]) <= 0 {
-        Print "Aris is already up-to-date"
+        Print("Aris is already up-to-date")
         return
     }
     
@@ -409,7 +410,7 @@ LoadPackageFolder(FullPath) {
         SaveSettings()
     } catch Error as err {
         Print("Failed to load package from " FullPath)
-        PrintError(err, 0)
+        Print(err.Message (err.Extra ? ": " err.Extra : ""))
         FullPath := FullPath == PrevWorkingDir ? A_ScriptDir : PrevWorkingDir
         SetWorkingDir(FullPath)
         RefreshWorkingDirGlobals()
